@@ -1,0 +1,30 @@
+# Disable directory browsing
+Options -Indexes
+
+# Block access to hidden files (files starting with a dot)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to specific files
+<FilesMatch "(^|/)(composer\.json|composer\.lock|.env|.gitignore|package\.json|yarn\.lock|.*\.log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to .git directory
+RewriteRule ^(.*/)?\.git/ - [F,L]
+
+# Prevent access to vendor directory
+RewriteRule ^vendor/ - [F,L]
+
+# Block access to other sensitive directories (add as needed)
+RewriteRule ^node_modules/ - [F,L]
+RewriteRule ^tests/ - [F,L]
+
+# Block access to check_balance.php if accessed directly
+<Files "check_balance.php">
+    Order allow,deny
+    Deny from all
+</Files>

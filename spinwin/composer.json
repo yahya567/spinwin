@@ -1,0 +1,7 @@
+{
+    "require": {
+        "tg/tgwebvalid": "^4.1",
+        "firebase/php-jwt": "^6.10",
+        "nubs/random-name-generator": "^2.2"
+    }
+}

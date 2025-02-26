@@ -1,0 +1,20 @@
+# Use PHP 8.1 with Apache
+FROM php:8.1-apache
+    
+# Install necessary php 8.1 extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# Copy your web content into the container
+COPY ./spinwin/ /var/www/html/
+
+# give proper ownership to the web content
+RUN chown -R www-data:www-data /var/www/html
+
+# Enable Apache rewrite module if needed
+RUN a2enmod rewrite
+
+# Configure Apache to use custom error documents
+RUN echo 'ErrorDocument 403 /spinwin/403.php' > /etc/apache2/conf-available/custom-error-pages.conf \
+    && echo 'ErrorDocument 404 /spinwin/404.php' >> /etc/apache2/conf-available/custom-error-pages.conf \
+    && echo 'ErrorDocument 500 /spinwin/500.php' >> /etc/apache2/conf-available/custom-error-pages.conf \
+    && a2enconf custom-error-pages

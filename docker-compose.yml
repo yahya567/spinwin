@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   restart: unless-stopped
+  #   container_name: dashboard_rabbitmq
+  #   hostname: rabbitmq
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: kiyarabbituser
+  #     RABBITMQ_DEFAULT_PASS: kiyaRabbitPassWord
+  #     RABBITMQ_DEFAULT_USER_2: kiyarabbituser2
+  #     RABBITMQ_DEFAULT_PASS_2: mNEUMuN0kX2cH
+  #   ports:
+  #     - "5673:5672"
+  #     - "15673:15672"
+  #   volumes:
+  #     - ./rabbitmq-entrypoint.sh:/usr/local/bin/rabbitmq-entrypoint.sh
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   entrypoint: ["/usr/local/bin/rabbitmq-entrypoint.sh"]
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "rabbitmqctl status"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  mysql:
+    image: mysql:5.7
+    restart: unless-stopped
+    container_name: spinwin_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=$$MYSQL_ROOT_PASSWORD"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # php-consumer:
+  #   restart: unless-stopped
+  #   container_name: dashboard_consumer
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-supervisor
+  #   volumes:
+  #     - ./dashboard:/usr/src/myapp
+  #     - ./.env:/usr/src/conf/.env
+  #     - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+  #   command: ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     mysql:
+  #       condition: service_healthy
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    container_name: spinwin_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - "8065:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+  
+  apache:
+    restart: unless-stopped
+    container_name: spinwin_apache2
+    build:
+      context: .
+      dockerfile: Dockerfile-apache
+    ports:
+      - "8066:80"
+    volumes:
+      - ./spinwin:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # redis:
+  #   image: redis:latest
+  #   restart: unless-stopped
+  #   container_name: dashboard_redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   environment:
+  #     - REDIS_PASSWORD=${REDIS_PASS}
+  #   command: redis-server --appendonly yes --requirepass ${REDIS_PASS}
+
+  # redis-commander:
+  #   image: rediscommander/redis-commander:latest
+  #   restart: unless-stopped
+  #   container_name: redis_commander
+  #   environment:
+  #     - REDIS_HOSTS=local:dashboard_redis:6379:0:${REDIS_PASS}
+  #     - HTTP_USER=${REDIS_COMMANDER_USER}
+  #     - HTTP_PASS=${REDIS_COMMANDER_PASS}
+  #   # command: --redis-host dashboard_redis --redis-port 6379 --redis-password ${REDIS_PASS} --http-u ${REDIS_COMMANDER_USER} --http-p ${REDIS_COMMANDER_PASS}
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - redis
+
+volumes:
+  # rabbitmq_data:
+  mysql_data:
+  # redis_data:
