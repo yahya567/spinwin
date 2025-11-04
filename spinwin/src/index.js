@@ -350,8 +350,7 @@ async function initTelegram() {
   const tg = window.Telegram.WebApp;
   tg.expand(); // Expand the web app to full height
 
-  // const initData = tg.initData;
-  const initData = "user=%7B%22id%22%3A621257359%2C%22first_name%22%3A%22FT%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22falcontech%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FS3_PpEtaJ1Y4QT1vtPVUFIVYELFP59Hh4kMnTOpuxmo.svg%22%7D&chat_instance=4742319314618038690&chat_type=private&start_param=uniqueSword&auth_date=1735320632&signature=h2a257PKHA_77PKNSyt31SvuNBOab8HiCz0KDQSC6CXlgLl8L6fzt5oeWmuUB3QqsE7M0tossMtH5zgTztofBw&hash=4b1a4d78d7e5241abd7f958816a4a0fa82fe038f1d69afbdfb794e7c272680e8";
+  const initData = tg.initData;
   const initDataURLEncoded = encodeURIComponent(initData);
   
 
@@ -417,7 +416,7 @@ function updateWinning(newWinning) {
 async function purchaseCoins(tonAmount, toWallet) {
   const token = getJWT();
 
-  adminWallet = getAdminWallet();
+  const adminWallet = await getAdminWallet();
 
   if (!walletConnected || !walletAddress) {
     showAlert('Please connect your wallet first.', 'warning');
@@ -547,7 +546,7 @@ async function buyLotto(tonAmount, lottoId) {
   // console.log(tonAmount, lottoId);
   const token = getJWT();
 
-  adminWallet = getAdminWallet();
+  const adminWallet = await getAdminWallet();
 
   if (!walletConnected || !walletAddress) {
     showAlert('Please connect your wallet first.', 'warning');
@@ -2026,7 +2025,7 @@ async function spinWheel() {
   spinButtonClicked = true;
 
   // Clear the bet input
-  betAmountInput.value = '';
+  // betAmountInput.value = '';
   removeShowAlert();
 }
 

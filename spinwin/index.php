@@ -63,7 +63,7 @@
       }
 
       .card {
-        background: rgba(0, 0, 0, 0.7) !important;
+        background: rgba(184, 175, 175, 0.7) !important;
         border: 2px solid #ffd700;
         border-radius: 15px;
         box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
@@ -169,7 +169,7 @@
           <a class="dropdown-item text-white" href="#" onclick="showTab('#nav-home', this)">
             <i class="fas fa-dice mr-2"></i>Play Spin
           </a>
-          <a class="dropdown-item text-white" href="#" onclick="showTab('#nav-lotto', this)">
+          <!-- <a class="dropdown-item text-white" href="#" onclick="showTab('#nav-lotto', this)">
             <i class="fas fa-ticket-alt mr-2"></i>Lucky Lotto
           </a>
           <a class="dropdown-item text-white" href="#" onclick="showTab('#nav-my-lotto', this)">
@@ -180,7 +180,7 @@
           </a>
           <a class="dropdown-item text-white" href="#" onclick="showTab('#nav-live-draw', this)">
             <i class="fas fa-bolt mr-2"></i>Live Draw
-          </a>
+          </a> -->
         </div>
       </li>
 
@@ -643,6 +643,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <!-- Your Custom Script -->
-    <script defer src="src/index.js?v=1.0.6"></script>
+    <script defer src="src/index.js?v=1.2.0"></script>
   </body>
 </html>

@@ -17,7 +17,7 @@ if (isset($headers['Authorization'])) {
 }
 
 if ($token) {
-    error_log("Used token 1: $token");
+    logger("Used token 1: $token");
 
     try {
         $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
@@ -144,7 +144,7 @@ if ($token) {
 
             $prices = getLotteries($limit, $page);
 
-            error_log(json_encode($prices));
+            logger(json_encode($prices));
 
             echo json_encode($prices);
 
@@ -153,11 +153,11 @@ if ($token) {
             $search = $_POST['search'];
             $page = $_POST['page'];
 
-            error_log("User ID: $userId");
+            logger("User ID: $userId");
 
             $tickets = getLotteryTickets($userId, $limit, $page);
 
-            error_log(json_encode($tickets));
+            logger(json_encode($tickets));
 
             if ($tickets && $tickets['success'] == true) {
                 echo json_encode($tickets['data']);
@@ -177,7 +177,7 @@ if ($token) {
 
             $winning_details = getWinningData($id);
 
-            error_log(json_encode($winning_details));
+            logger(json_encode($winning_details));
 
             echo json_encode($winning_details);
 
@@ -195,7 +195,7 @@ if ($token) {
             $page = $_POST['page'];
 
             $winners = getWinners($limit, $page);
-            // error_log(json_encode($winners));
+            // logger(json_encode($winners));
             echo json_encode($winners);
         } elseif (isset($_POST['convert'])) {
             $from = 'SPIN';
@@ -225,7 +225,7 @@ if ($token) {
             
             echo json_encode(['amount' => $amount, 'percentage' => $percentage]);
         }  elseif (isset($_POST['getAdminWallet'])) {
-            error_log(json_encode(['success' => true, 'wallet' => $adminWallet]));
+            logger(json_encode(['success' => true, 'wallet' => $adminWallet]));
             echo json_encode(['success' => true, 'wallet' => $adminWallet]);
         } elseif (isset($_POST['withdraw'])) {
             $amount = $_POST['amount'];
@@ -286,7 +286,7 @@ if ($token) {
                 echo json_encode(['success' => true, 'message' => "Sending to {$receipientData['data']['unique_name']}"]);
             }
         } elseif (isset($_POST['check-token'])) {
-            error_log(json_encode(['success' => true, 'message' => 'Token is valid']));
+            logger(json_encode(['success' => true, 'message' => 'Token is valid']));
             echo json_encode(['success' => true, 'message' => 'Token is valid']);
         } elseif (isset($_POST['liveDraw'])) {
             echo liveDraw();
@@ -294,7 +294,7 @@ if ($token) {
 
         } else {
             http_response_code(400);
-            error_log('Invalid request');
+            logger('Invalid request');
             echo json_encode(['message' => 'Invalid request']);
         }
     } catch (Exception $e) {

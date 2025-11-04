@@ -14,6 +14,10 @@ function generateUuid() {
     // example output: 1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4c1a
 }
 
+function logger($text) {
+    // error_log($text);
+}
+
 function getUserId($telegramUserId) {
     try {
         $conn = getDbConnection();
@@ -58,7 +62,7 @@ function saveReferrals($referredId, $referrerUniqueName) {
         $stmt->close();
 
         if (!$referrerId) {
-            error_log("Referrer does not exist.");
+            logger("Referrer does not exist.");
             $conn->close();
             return ['success' => false, 'message' => 'Referrer does not exist.'];
         }
@@ -72,7 +76,7 @@ function saveReferrals($referredId, $referrerUniqueName) {
         $stmt->close();
 
         if ($referralId) {
-            error_log("Referred exists.");
+            logger("Referred exists.");
             $conn->close();
             return ['success' => false, 'message' => 'Referral already exists.'];
         }
@@ -105,11 +109,11 @@ function saveReferrals($referredId, $referrerUniqueName) {
 
         $conn->close();
 
-        error_log("Referral saved successfully.");
+        logger("Referral saved successfully.");
 
         return ['success' => true, 'message' => 'Referral saved successfully.'];
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return ['success' => false, 'message' => 'An error occurred.'];
     }
 }
@@ -144,7 +148,7 @@ function registerOrAuthenticate($username, $telegramUserId, $referrerUniqueName)
         $conn->close();
     } catch (Exception $e) {
         $response = ['success' => false, 'message' => $e->getMessage()];
-        error_log($e->getMessage());
+        logger($e->getMessage());
     }
     
     return json_encode($response);
@@ -186,7 +190,7 @@ function checkBalance($userId) {
 
         return $response;
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return 0;
     }
 }
@@ -230,7 +234,7 @@ function getLotteryTickets($userId, $limit, $page) {
 
         return ['success' => true, 'data' => $tickets];
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return ['success' => false, 'message' => 'An error occurred.'];
     }
 }
@@ -266,14 +270,14 @@ function checkWinning($userId) {
         $stmt->close();
         $conn->close();
 
-        // error_log("User ID {$id} has a winning balance: {$balance} SpinCoins");
+        // logger("User ID {$id} has a winning balance: {$balance} SpinCoins");
 
         // turn it into intiger 
         $response = intval($response);
 
         return $response;
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return 0;
     }
 }
@@ -356,7 +360,7 @@ function withdraw($userId, $amount, $wallet, $currency, $currencyAmount) {
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
-        error_log($e->getMessage());
+        logger($e->getMessage());
         $conn->close();
 
         return ['success' => false, 'message' => 'An error occurred.'];
@@ -385,7 +389,7 @@ function getUserDataFromId($id) {
 
         return ['success' => true, 'data' => ['id' => $id, 'telegram_user_id' => $telegramUserId, 'unique_name' => $uniqueName, 'chat_id' => $chatId, 'username' => $username]];
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return ['success' => false, 'message' => 'An error occurred.'];
     }
 }
@@ -412,7 +416,7 @@ function getUserData($userId) {
 
         return ['success' => true, 'data' => ['id' => $id, 'telegram_user_id' => $telegramUserId, 'unique_name' => $uniqueName, 'chat_id' => $chatId, 'username' => $username]];
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return ['success' => false, 'message' => 'An error occurred.'];
     }
 }
@@ -439,7 +443,7 @@ function getUserDataFromUniqueName($uniqueName) {
 
         return ['success' => true, 'data' => ['id' => $id, 'telegram_user_id' => $telegramUserId, 'unique_name' => $uniqueName, 'chat_id' => $chatId, 'username' => $username]];
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return ['success' => false, 'message' => 'An error occurred.'];
     }
 }
@@ -537,7 +541,7 @@ function addOrUpdateBalance($userId, $amount, $type, $currency, $currencyAmount)
         } catch (Exception $e) {
             // Rollback the transaction if something failed
             $conn->rollback();
-            error_log($e->getMessage());
+            logger($e->getMessage());
             $conn->close();
 
             $response = ['success' => false, 'message' => 'An error occurred.'];
@@ -545,7 +549,7 @@ function addOrUpdateBalance($userId, $amount, $type, $currency, $currencyAmount)
 
         return json_encode($response);
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return json_encode(['success' => false, 'message' => 'An error occurred.']);
     }
 }
@@ -644,7 +648,7 @@ function transfer($userId, $to, $amount) {
         $stmt->close();
 
         if (!$walletId || $balance < $amount) {
-            error_log("Sender has no winning wallet or {$balance} is lessa than {$amount}. Checking user wallet.");
+            logger("Sender has no winning wallet or {$balance} is lessa than {$amount}. Checking user wallet.");
             // Check if the sender has a user wallet
             $stmt = $conn->prepare("SELECT id, coin_balance FROM user_wallets WHERE user_id = ?");
             $stmt->bind_param('i', $id);
@@ -658,7 +662,7 @@ function transfer($userId, $to, $amount) {
                 return ['success' => false, 'message' => 'Insufficient balance.'];
             }
 
-            error_log("Sender has user wallet and {$userBalance} is greater than {$amount}. Deducting from user wallet.");
+            logger("Sender has user wallet and {$userBalance} is greater than {$amount}. Deducting from user wallet.");
 
             // Deduct the amount from the sender's user wallet
             $stmt = $conn->prepare("UPDATE user_wallets SET coin_balance = coin_balance - ? WHERE user_id = ?");
@@ -666,7 +670,7 @@ function transfer($userId, $to, $amount) {
             $stmt->execute();
             $stmt->close();
         } else {
-            error_log("Sender has a winning wallet {$balance} greater than {$amount}. Deducting from winnings wallet.");
+            logger("Sender has a winning wallet {$balance} greater than {$amount}. Deducting from winnings wallet.");
             // Deduct the amount from the sender's winnings wallet
             $stmt = $conn->prepare("UPDATE winnings SET coin_balance = coin_balance - ? WHERE user_id = ?");
             $stmt->bind_param('ii', $amount, $id);
@@ -683,18 +687,18 @@ function transfer($userId, $to, $amount) {
         $stmt->close();
 
         $totalReceivedAmount = $amount - $totalTransferFee;
-        error_log("Transfer fee: {$totalTransferFee}");
-        error_log("Total received amount: {$totalReceivedAmount}");
+        logger("Transfer fee: {$totalTransferFee}");
+        logger("Total received amount: {$totalReceivedAmount}");
 
         if (!$receiverWalletId) {
-            error_log("Recipient {$recipientId} does not have a user wallet. Creating one...");
+            logger("Recipient {$recipientId} does not have a user wallet. Creating one...");
             // Create a new user wallet for the recipient
             $stmt = $conn->prepare("INSERT INTO user_wallets (user_id, coin_balance) VALUES (?, ?)");
             $stmt->bind_param('id', $recipientId, $totalReceivedAmount);
             $stmt->execute();
             $stmt->close();
         } else {
-            error_log("Recipient {$recipientId} has a user wallet. Updating balance...");
+            logger("Recipient {$recipientId} has a user wallet. Updating balance...");
             // Add the amount to the recipient's winnings balance
             $stmt = $conn->prepare("UPDATE user_wallets SET coin_balance = coin_balance + ? WHERE user_id = ?");
             $stmt->bind_param('di', $totalReceivedAmount, $recipientId);
@@ -741,7 +745,7 @@ function transfer($userId, $to, $amount) {
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
-        error_log($e->getMessage());
+        logger($e->getMessage());
         $conn->close();
 
         return ['success' => false, 'message' => 'An error occurred during the transfer.'];
@@ -1054,7 +1058,7 @@ function getBiasedOutcome($outcomes, $betAmount, $userId) {
             '5X' => 0.001,       // 0.1%
         ];
 
-        // error_log("Rigged bad faith");
+        // logger("Rigged bad faith");
     } else {
         $weights = [
             'Thank you' => 0.1, // 10%
@@ -1065,7 +1069,7 @@ function getBiasedOutcome($outcomes, $betAmount, $userId) {
             '5X' => 0.005,       // 0.5%
         ];
 
-        // error_log("Rigged in good faith");
+        // logger("Rigged in good faith");
     }
 
 
@@ -1143,8 +1147,8 @@ function getOutcome($userId, $betAmount) {
     $userBalance = checkBalance($userId); // Replace with actual retrieval logic
     $newWinningBalance = checkWinning($userId);
 
-    error_log("User {$userId} betted: {$betAmount} SpinCoins");
-    error_log("User {$userId} balance: {$userBalance} SpinCoins");
+    logger("User {$userId} betted: {$betAmount} SpinCoins");
+    logger("User {$userId} balance: {$userBalance} SpinCoins");
 
     
     $newBalance = $userBalance - $betAmount;
@@ -1152,13 +1156,13 @@ function getOutcome($userId, $betAmount) {
     // if ($newBalance < 0) {
     //     $allBalance = $userBalance + $newWinningBalance;
     //     if ($allBalance < 0) {
-    //         error_log("Completely less than zero");
+    //         logger("Completely less than zero");
     //     } else {
     //         $decuctible = $betAmount - $userBalance;
-    //         error_log("Convert the remaining amount from winning to user balance {$decuctible}");
+    //         logger("Convert the remaining amount from winning to user balance {$decuctible}");
     //     }
 
-    //     // error_log("Less than 0 after bet");
+    //     // logger("Less than 0 after bet");
     //     return false;
     // }
     
@@ -1176,8 +1180,8 @@ function getOutcome($userId, $betAmount) {
     // Map the selected outcome to the appropriate sound file
     $soundFile = 'won.wav';
 
-    error_log("User {$userId} outcome: $selectedOutcome");
-    error_log("User {$userId} new balance: $newBalance");
+    logger("User {$userId} outcome: $selectedOutcome");
+    logger("User {$userId} new balance: $newBalance");
 
     switch ($selectedOutcome) {
         case '1X':
@@ -1217,11 +1221,11 @@ function getOutcome($userId, $betAmount) {
 
     $afterBetBalance = $newBalance + $betBalance;
     
-    error_log("User {$userId} bet won amount: $betBalance");
-    error_log("User {$userId} new balance after bet: {$afterBetBalance}");
+    logger("User {$userId} bet won amount: $betBalance");
+    logger("User {$userId} new balance after bet: {$afterBetBalance}");
     
     $processBet = processWinnings($userId, $betBalance, $betAmount, $winOrLose);
-    error_log($processBet);
+    logger($processBet);
 
     if (json_decode($processBet, true)['success']) {
         
@@ -1242,14 +1246,14 @@ function getOutcome($userId, $betAmount) {
 function rewardReferrer($userId, $spinCoin) {
     // spincoin cannot be negative
     if ($spinCoin < 0) {
-        error_log("RRRRRRRRR Invalid amount. Amount cannot be negative.");
+        logger("RRRRRRRRR Invalid amount. Amount cannot be negative.");
         return json_encode(['success' => false, 'message' => 'Invalid amount. Amount cannot be negative.']);
     }
 
     $referralData = getReferrer($userId);
 
     if (!$referralData) {
-        error_log("RRRRRRRRR No referrer found for user {$userId}.");
+        logger("RRRRRRRRR No referrer found for user {$userId}.");
         return json_encode(['success' => false, 'message' => 'No referrer found.']);
     }
 
@@ -1258,7 +1262,7 @@ function rewardReferrer($userId, $spinCoin) {
 
     $rewardAmount = $spinCoin * $referrerBonus / 100;
 
-    error_log("RRRRRRRRR Referrer {$referrerId} will be rewarded with {$rewardAmount} SpinCoins.");
+    logger("RRRRRRRRR Referrer {$referrerId} will be rewarded with {$rewardAmount} SpinCoins.");
     $conn = getDbConnection();
 
     // begin a transaction
@@ -1301,16 +1305,16 @@ function rewardReferrer($userId, $spinCoin) {
         $conn->commit();
         $conn->close();
 
-        error_log("RRRRRRRRR Referrer {$referrerId} rewarded with {$rewardAmount} SpinCoins.");
+        logger("RRRRRRRRR Referrer {$referrerId} rewarded with {$rewardAmount} SpinCoins.");
 
         return json_encode(['success' => true, 'message' => 'Referrer rewarded successfully.']);
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
-        error_log($e->getMessage());
+        logger($e->getMessage());
         $conn->close();
 
-        error_log("RRRRRRRRR An error occurred while rewarding the referrer {$referrerId} with {$rewardAmount} SpinCoins.");
+        logger("RRRRRRRRR An error occurred while rewarding the referrer {$referrerId} with {$rewardAmount} SpinCoins.");
 
         return json_encode(['success' => false, 'message' => 'An error occurred while rewarding the referrer.']);
     }
@@ -1414,17 +1418,17 @@ function processWinnings($userId, $amount, $betAmount, $winOrLose) {
 
             if ($newBalance < 0) {
                 $allBalance = ($userBalance + $winningBalance) - $betAmount;
-                error_log("User balance: {$userBalance}");
-                error_log("Winning balance: {$winningBalance}");
-                error_log("Bet amount: {$betAmount}");
-                error_log("All balance: {$allBalance}");
+                logger("User balance: {$userBalance}");
+                logger("Winning balance: {$winningBalance}");
+                logger("Bet amount: {$betAmount}");
+                logger("All balance: {$allBalance}");
                 if ($allBalance < 0) {
-                    error_log("Completely less than zero");
+                    logger("Completely less than zero");
                     return json_encode(['success' => false, 'message' => 'Completely less than zero.']);
                 } else {
                     $decuctible = $betAmount - $userBalance;
-                    error_log("Deductible: {$decuctible}");
-                    error_log("Convert the remaining amount from winning to user balance {$decuctible}");
+                    logger("Deductible: {$decuctible}");
+                    logger("Convert the remaining amount from winning to user balance {$decuctible}");
                     // return json_encode(['success' => false, 'message' => "Convert the remaining amount from winning to user balance {$decuctible}"]);
 
                     $stmt = $conn->prepare("UPDATE winnings SET coin_balance = coin_balance - ? WHERE user_id = ?");
@@ -1458,7 +1462,7 @@ function processWinnings($userId, $amount, $betAmount, $winOrLose) {
         } catch (Exception $e) {
             // Rollback the transaction if something failed
             $conn->rollback();
-            error_log($e->getMessage());
+            logger($e->getMessage());
             $conn->close();
 
             $response = ['success' => false, 'message' => 'An error occurred while processing winnings.'];
@@ -1466,7 +1470,7 @@ function processWinnings($userId, $amount, $betAmount, $winOrLose) {
 
         return json_encode($response);
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        logger($e->getMessage());
         return json_encode(['success' => false, 'message' => 'An error occurred.']);
     }
 }
@@ -1493,7 +1497,7 @@ function logOutcomes($label, $bet, $won) {
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
-        error_log($e->getMessage());
+        logger($e->getMessage());
         $conn->close();
     }
 }
@@ -1586,7 +1590,7 @@ function verifyTransaction2($toWallet, $expectedAmount, $expectedPayload, $apiKe
     
     // Construct the URL with the recipient wallet and API key
     $url = "$apiUrl?address=$toWallet&limit=100&api_key=$apiKey";
-    // error_log($url);
+    // logger($url);
     // echo "\n";
 
     // Initialize cURL
@@ -1615,35 +1619,35 @@ function verifyTransaction2($toWallet, $expectedAmount, $expectedPayload, $apiKe
         foreach ($transactions as $tx) {
             $actualAmount = $tx['in_msg']['value'] ?? null; // Amount in nanoTONs
             $actualPayloadBase64 = $tx['in_msg']['message'] ?? null; // Payload in Base64
-            error_log("Actual Payload: $actualPayloadBase64");
-            error_log("Expected Payload: $expectedPayload");
-            error_log("Actual Amount: $actualAmount");
-            error_log("Expected Amount: $expectedAmountNanoTon");
+            logger("Actual Payload: $actualPayloadBase64");
+            logger("Expected Payload: $expectedPayload");
+            logger("Actual Amount: $actualAmount");
+            logger("Expected Amount: $expectedAmountNanoTon");
 
             if ($actualAmount && $actualPayloadBase64 && $actualAmount === $expectedAmountNanoTon) {
                 // Compare the payload
                 if ($actualPayloadBase64 === $expectedPayload) {
-                    error_log("Verified transaction:");
+                    logger("Verified transaction:");
                     // print_r($tx); // Optional: Log the transaction details
                     return true; // Transaction verified
                 } else {
-                    error_log("Passed");
+                    logger("Passed");
                 }
             } else {
-                error_log("Something");
+                logger("Something");
             }
         }
     } else {
-        error_log("Nothing to see here");
+        logger("Nothing to see here");
     }
 
     if ($attempts > 1) {
         sleep(3);
-        error_log("0000000000 Retrying... Attempts left: " . ($attempts - 1));
+        logger("0000000000 Retrying... Attempts left: " . ($attempts - 1));
         return verifyTransaction2($toWallet, $expectedAmount, $expectedPayload, $apiKey, $attempts - 1);
     }
 
-    error_log("No matching transaction found for {$expectedPayload}");
+    logger("No matching transaction found for {$expectedPayload}");
     return false; // No matching transaction found
 }
 
@@ -1724,7 +1728,7 @@ function verifyTransactionOld($userId, $walletAddress, $toWallet, $expectedAmoun
     
     $uri = $apiUrl . http_build_query($queryParams, '', '&');
     
-    error_log("URI: $uri");
+    logger("URI: $uri");
 
     // Set cURL options
     curl_setopt($ch, CURLOPT_URL, $uri);
@@ -1740,7 +1744,7 @@ function verifyTransactionOld($userId, $walletAddress, $toWallet, $expectedAmoun
         return ['success' => false, 'message' => 'cURL error: ' . $error_msg];
     }
 
-    error_log("Executed: {$response}");
+    logger("Executed: {$response}");
 
     // Close cURL session
     curl_close($ch);
@@ -1753,8 +1757,8 @@ function verifyTransactionOld($userId, $walletAddress, $toWallet, $expectedAmoun
             $amount = $transaction['in_msg']['value'];
             $payload = $transaction['in_msg']['message'] ?? ''; // Retrieve transaction payload
 
-            error_log("Amount: $amount");
-            error_log("Payload: $payload");
+            logger("Amount: $amount");
+            logger("Payload: $payload");
             // Check for matching amount and unique identifier
             if ($amount == $expectedAmount * 1e9 && $payload === $payload) {
                 $processOrder = processOrder($userId, $walletAddress, $toWallet, $expectedAmount, $uniqueIdentifier, 'TON', 1);
@@ -1795,8 +1799,8 @@ function processLottoOrder($userId, $fromWallet, $toWallet, $tonAmount, $uniqueI
     $price = $lottoData['price'];
     $lottoNumber = generateSecureLotteryNumber(9);
     
-    error_log("TON Amount: $tonAmount");
-    error_log("Lotto number: $lottoNumber");
+    logger("TON Amount: $tonAmount");
+    logger("Lotto number: $lottoNumber");
 
     if ($price <= $tonAmount) {
         $conn = getDbConnection();
@@ -1828,7 +1832,7 @@ function processLottoOrder($userId, $fromWallet, $toWallet, $tonAmount, $uniqueI
 
         return $ticket_id;
     } else {
-        error_log("Your payment of {$tonAmount} is less than a price {$price}");
+        logger("Your payment of {$tonAmount} is less than a price {$price}");
         return false;
     }
 }
@@ -1843,8 +1847,8 @@ function processOrder($userId, $fromWallet, $toWallet, $tonAmount, $uniqueIdenti
         $spinCoin = currencyConverter($tonAmount, $currency, 'SPIN');
     }
 
-    error_log("TON Amount: $tonAmount");
-    error_log("SpinCoin Amount: $spinCoin");
+    logger("TON Amount: $tonAmount");
+    logger("SpinCoin Amount: $spinCoin");
 
     try {
         $conn = getDbConnection();
@@ -1918,7 +1922,7 @@ function processOrder($userId, $fromWallet, $toWallet, $tonAmount, $uniqueIdenti
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
-        error_log($e->getMessage());
+        logger($e->getMessage());
         $conn->close();
 
         // return json_encode(['success' => false, 'message' => 'An error occurred while processing the order.']);
