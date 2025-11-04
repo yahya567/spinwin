@@ -1,6 +1,6 @@
 // Initialize TON Connect UI SDK
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: 'https://spin.lomiadvert.online/tonconnect-manifest.json',
+      manifestUrl: 'https://spin.lomiads.online/tonconnect-manifest.json',
       buttonRootId: 'ton-connect'
 });
 

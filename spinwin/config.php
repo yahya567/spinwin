@@ -2,7 +2,7 @@
 require 'vendor/autoload.php';
 $secretKey = 'superSecret';
 $botToken = '7633606859:AAH3W-YT51vAD34YHPECTGb74acW6QwkDe4';
-$webAppUrl = "https://spin.lomiadvert.online";  // Replace with your hosted web app URL
+$webAppUrl = "https://spin.lomiads.online";  // Replace with your hosted web app URL
 $botUrl = 'https://t.me/wheelyspinbot';
 $botName = 'SpinWin';
 $environment = 'production'; // production
