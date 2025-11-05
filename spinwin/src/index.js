@@ -9,6 +9,7 @@ const { Cell } = TonWeb.boc;
 
 let winningMessage = 'Welcome!';
 let walletAddress = null;
+let humanAddress = null;
 let walletConnected = false;
 let userBalance = 0;
 let userWinning = 0;
@@ -22,6 +23,13 @@ tonConnectUI.onStatusChange((walletInfo) => {
     walletAddress = walletInfo.account.address;
     publicKey = walletInfo.account.publicKey;
     walletConnected = true;
+
+    try {
+      humanAddress = new TonWeb.utils.Address(walletAddress).toString(true, true, false);
+    } catch (err) {
+      console.error('Failed to convert wallet address:', err);
+      converted_wallet = walletAddress; // fallback
+    }
     // fetchUserBalance(); // Fetch the balance once connected
   } else {
     walletAddress = null;
@@ -29,7 +37,6 @@ tonConnectUI.onStatusChange((walletInfo) => {
     // updateBalance(0);
   }
 });
-
 
 document.addEventListener('DOMContentLoaded', () => {
     /**
@@ -746,7 +753,7 @@ async function withdrawSpinCoins() {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: `withdraw&amount=${withdrawAmount}&walletAddress=${walletAddress}`,
+      body: `withdraw&amount=${withdrawAmount}&walletAddress=${walletAddress}&humanWallet=${humanAddress}`,
     });
     const data = await response.json();
     // console.log(data);
@@ -1355,7 +1362,7 @@ async function fetchWithdrawals(limit = 10, search = '', page = 1) {
         <span>${withdrawal.currency_amount} ${withdrawal.currency}</span>
         <span class="badge badge-${badgeColor} badge-pill">${statusDisplay}</span>
       `;
-      listItem.onclick = () => alert(`Withdrawal (Account): ${withdrawal.wallet}`);
+      listItem.onclick = () => alert(`Withdrawal (Account): ${withdrawal.human_wallet}`);
       withdrawalsList.appendChild(listItem);
     });
 
@@ -1538,8 +1545,7 @@ async function fetchTransfers(limit = 10, search = '', page = 1) {
       const headerItem = document.createElement('li');
       headerItem.className = 'text-dark list-group-item d-flex justify-content-between align-items-center font-weight-bold';
       headerItem.innerHTML = `
-        <span>SpinCoin</span>
-        <span>User</span>
+        <span>Amount</span>
         <span>Direction</span>
       `;
       transfersList.appendChild(headerItem);
@@ -1556,10 +1562,9 @@ async function fetchTransfers(limit = 10, search = '', page = 1) {
       listItem.className = 'text-dark list-group-item d-flex justify-content-between align-items-center';
       listItem.innerHTML = `
         <span>${transfer.amount}</span>
-        <span>${transfer.user}</span>
         <span class="badge badge-${badgeColor} badge-pill">${directionDisplay}</span>
       `;
-      listItem.onclick = () => alert(`Reference Number: ${transfer.reference_number}`);
+      listItem.onclick = () => alert(`User: ${transfer.user}\n\nReference Number: ${transfer.reference_number}`);
       transfersList.appendChild(listItem);
     });
 

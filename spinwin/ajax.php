@@ -230,10 +230,11 @@ if ($token) {
         } elseif (isset($_POST['withdraw'])) {
             $amount = $_POST['amount'];
             $wallet = $_POST['walletAddress'];
+            $humanWallet = $_POST['humanWallet'];
 
             $converted = currencyConverter($amount, 'SPIN', 'TON');
 
-            $withdraw = withdraw($userId, $amount, $wallet, 'TON', $converted);
+            $withdraw = withdraw($userId, $amount, $wallet, 'TON', $converted, $humanWallet);
 
             echo json_encode($withdraw);
 

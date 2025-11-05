@@ -185,7 +185,7 @@
       </li>
 
       <!-- Wallet Dropdown -->
-      <li class="nav-item dropdown">
+      <!-- <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="walletDropdown" role="button" data-toggle="dropdown">
           <i class="fas fa-wallet"></i> Wallet
         </a>
@@ -200,6 +200,27 @@
             <i class="fas fa-exchange-alt mr-2"></i>Transfer
           </a>
         </div>
+      </li> -->
+
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showTab('#nav-referrals', this)">
+          <i class="fas fa-users"></i> Referrals
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showTab('#nav-buy', this)">
+          <i class="fas fa-coins mr-2"></i>Purchase Coins
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showTab('#nav-withdraw', this)">
+          <i class="fas fa-hand-holding-usd mr-2"></i>Withdraw
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showTab('#nav-transfer', this)">
+          <i class="fas fa-exchange-alt mr-2"></i>Transfer
+        </a>
       </li>
 
       <!-- History Dropdown -->
@@ -307,6 +328,11 @@
       });
 
       function showTab(tabId, element) {
+        if (document.getElementById('navbarTabs').classList.contains('show')) {
+          // document.getElementById('navbarTabs').classList.remove('show');
+          // initate a click on a button with class 'navbar-toggler'
+          document.querySelector('.navbar-toggler').click();
+        }
         // Remove all active classes
         document.querySelectorAll('.nav-link, .dropdown-item').forEach(el => {
           el.classList.remove('active');

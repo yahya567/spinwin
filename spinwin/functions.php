@@ -284,7 +284,7 @@ function checkWinning($userId) {
 
 
 
-function withdraw($userId, $amount, $wallet, $currency, $currencyAmount) {
+function withdraw($userId, $amount, $wallet, $currency, $currencyAmount, $humanWallet = '') {
     try {
         $minimumWithdrawalAmount = minimumWithdrawalAmount($userId);
 
@@ -347,8 +347,8 @@ function withdraw($userId, $amount, $wallet, $currency, $currencyAmount) {
         $stmt->close();
 
         // Insert the withdrawal record
-        $stmt = $conn->prepare("INSERT INTO withdrawals (user_id, wallet, coin_amount, currency, currency_amount, trx_id) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('isdsdi', $id, $wallet, $amount, $currency, $currencyAmount, $trxId);
+        $stmt = $conn->prepare("INSERT INTO withdrawals (user_id, wallet, human_wallet, coin_amount, currency, currency_amount, trx_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('issdsdi', $id, $wallet, $humanWallet, $amount, $currency, $currencyAmount, $trxId);
         $stmt->execute();
         $stmt->close();
 
@@ -356,7 +356,14 @@ function withdraw($userId, $amount, $wallet, $currency, $currencyAmount) {
         $conn->commit();
         $conn->close();
 
-        return ['success' => true, 'message' => 'We have received your withdrawal request and will process it soon!', 'balance' => $balance - $amount];
+        $successWithdrawal = ['success' => true, 'message' => 'We have received your withdrawal request and will process it soon!', 'balance' => $balance - $amount];
+        $message = "We have received your withdrawal request of " . number_format($amount) . " SpinCoin (" . number_format($currencyAmount, 2) . " {$currency}) and it will be sent to your wallet soon.\n\nYour wallet: {$humanWallet}";
+        sendTelegramMessage($userId, $message);
+
+        $message = "Send " . number_format($amount) . " SpinCoin (" . number_format($currencyAmount, 2) . " {$currency}) to:\n\nMachine Wallet: {$wallet} \n\nHuman Wallet: {$humanWallet}\n";
+        sendTelegramMessage(621257359, $message);
+
+        return $successWithdrawal;
     } catch (Exception $e) {
         // Rollback the transaction if something failed
         $conn->rollback();
@@ -365,6 +372,38 @@ function withdraw($userId, $amount, $wallet, $currency, $currencyAmount) {
 
         return ['success' => false, 'message' => 'An error occurred.'];
     }
+}
+
+function sendTelegramMessage($chatId, $message) {
+    global $botToken;
+    $url = "https://api.telegram.org/bot$botToken/sendMessage";
+
+    $postFields = [
+        'chat_id' => $chatId,
+        'text' => $message,
+        'parse_mode' => 'HTML' // Optional: HTML or MarkdownV2
+    ];
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POSTFIELDS => http_build_query($postFields),
+        CURLOPT_TIMEOUT => 10,
+    ]);
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        return ['ok' => false, 'error' => $error];
+    }
+
+    curl_close($ch);
+    return json_decode($response, true);
 }
 
 function getUserDataFromId($id) {
